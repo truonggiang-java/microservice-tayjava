@@ -1,0 +1,38 @@
+server:
+   port: 8080
+spring:
+   profiles:
+      active: ${SPRING_PROFILES_ACTIVE:dev}
+   config:
+      import: optional:configserver:http://${URL_CONFIG_SERVER:localhost}:8888
+   output:
+      ansi:
+         enabled: always
+   application:
+      name: gateway
+   cloud:
+      gateway:
+         globalcors:
+            corsConfigurations:
+               '[/**]':
+                  allowedOrigins: '*'
+                  allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                  allowedHeaders: '*'
+         routes:
+         -  id: authentication
+            uri: lb://AUTHENTICATION
+            predicates:
+            - Path=/auth/**,/authentication/v3/api-docs
+            filters:
+            - RewritePath=/auth/(?<segment>.*), /$\{segment}
+         -  id: account
+            uri: lb://ACCOUNT
+            predicates:
+            - Path=/acc/**,/account/v3/api-docs
+            filters:
+            - RewritePath=/acc/(?<segment>.*), /$\{segment}
